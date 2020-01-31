@@ -210,6 +210,7 @@ class ExtendedEditableText extends StatefulWidget {
         super(key: key);
 
   ///build your ccustom text span
+  /// 对比源码 新增
   final SpecialTextSpanBuilder specialTextSpanBuilder;
 
   /// Controls the text being edited.
@@ -318,6 +319,7 @@ class ExtendedEditableText extends StatefulWidget {
   /// Within editable text and textfields, [StrutStyle] will not use its standalone
   /// default values, and will instead inherit omitted/null properties from the
   /// [TextStyle] instead. See [StrutStyle.inheritFromTextStyle].
+  /// 对比源码 做了修改
   StrutStyle get strutStyle {
     return _strutStyle;
 
@@ -764,6 +766,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   FocusAttachment _focusAttachment;
 
   ///whether to support build SpecialText
+  /// 对比源码 新增
   bool get supportSpecialText =>
       widget.specialTextSpanBuilder != null &&
       !widget.obscureText &&
@@ -889,8 +892,10 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       return;
     }
 
+    // 对比源码 新增
     value = _handleSpecialTextSpan(value);
     if (value.text != _value.text) {
+      // 对比源码 修改
       _hideSelectionOverlayIfNeeded();
       _showCaretOnScreen();
       if (widget.obscureText && value.text.length == _value.text.length + 1) {
@@ -909,6 +914,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   }
 
   ///zmt
+  /// 对比源码 新增
   TextEditingValue _handleSpecialTextSpan(TextEditingValue value) {
     if (supportSpecialText) {
       final bool textChanged = _value?.text != value?.text;
@@ -988,6 +994,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
         }
         TextPosition currentTextPosition;
         //zmt
+        // 对比源码 修改
         if (supportSpecialText) {
           currentTextPosition = convertTextInputPostionToTextPainterPostion(
               renderEditable.text, renderEditable.selection.base);
@@ -1014,6 +1021,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
           _lastTextPosition = renderEditable.getPositionForPoint(renderEditable
               .localToGlobal(_lastBoundedOffset + _floatingCursorOffset));
 
+          // 对比源码 新增
           if (renderEditable?.handleSpecialText ?? false) {
             _lastTextPosition = makeSureCaretNotInSpecialText(
                 renderEditable.text, _lastTextPosition);
@@ -1045,6 +1053,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
           FloatingCursorDragState.End, finalPosition, _lastTextPosition);
       if (_lastTextPosition.offset != renderEditable.selection.baseOffset)
         // The cause is technically the force cursor, but the cause is listed as tap as the desired functionality is the same.
+        // 对比源码 修改
         _handleSelectionChanged(
             TextSelection.collapsed(offset: _lastTextPosition.offset),
             SelectionChangedCause.forcePress);
@@ -1227,6 +1236,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     }
   }
 
+  // 对比源码 新增
   void _hideSelectionOverlayIfNeeded() {
     _selectionOverlay?.hide();
     _selectionOverlay = null;
@@ -1243,6 +1253,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     }
   }
 
+  // 对比源码 修改
   void _handleSelectionChanged(
       TextSelection selection, SelectionChangedCause cause) {
     if (renderEditable?.handleSpecialText ?? false) {
@@ -1262,6 +1273,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     // if textChanged, text was changed by user,
     // _didChangeTextEditingValue setstate to change text of ExtendedRenderEditable
     // but still slower than this method.
+    // 这块改动特别大  需要研究
     if (!textChanged) widget.controller.selection = selection;
 
     // This will show the keyboard for all selection changes on the
@@ -1284,6 +1296,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       widget.onSelectionChanged(selection, cause);
   }
 
+  // 对比源码 新增 函数
   void createSelectionOverlay({
     ExtendedRenderEditable renderObject,
     bool showHandles: true,
@@ -1393,6 +1406,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   void _formatAndSetValue(TextEditingValue value, {bool set: false}) {
     final bool textChanged = _value?.text != value?.text;
     //https://github.com/flutter/flutter/issues/36048
+    // 对比源码 修改
     if (textChanged) {
       _hideSelectionOverlayIfNeeded();
     }
@@ -1496,6 +1510,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
         (!_hasFocus || !_value.selection.isCollapsed)) _stopCursorTimer();
   }
 
+  // 对比源码 修改
   void _didChangeTextEditingValue() {
     final bool textChanged =
         _value?.text != _lastKnownRemoteTextEditingValue?.text;
@@ -1523,6 +1538,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       _showCaretOnScreen();
       if (!_value.selection.isValid) {
         // Place cursor at the end if the selection is invalid when we receive focus.
+        // 对比源码 ，修改
         widget.controller.selection =
             TextSelection.collapsed(offset: _value.text.length);
       }
@@ -1567,6 +1583,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
 
   @override
   set textEditingValue(TextEditingValue value) {
+    // 对比源码 新增
     value = _handleSpecialTextSpan(value);
     _selectionOverlay?.update(value);
     _formatAndSetValue(value);
@@ -1591,6 +1608,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       return false;
     }
 
+    // 对比源码 新增
     if (_selectionOverlay == null &&
         FocusScope.of(context).focusedChild == widget.focusNode) {
       createSelectionOverlay();
@@ -1620,6 +1638,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   }
 
   VoidCallback _semanticsOnCopy(TextSelectionControls controls) {
+    // 少了 copyEnabled
     return widget.selectionEnabled &&
             _hasFocus &&
             controls?.canCopy(this) == true
@@ -1628,6 +1647,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   }
 
   VoidCallback _semanticsOnCut(TextSelectionControls controls) {
+    // 少了 cutEnabled
     return widget.selectionEnabled &&
             _hasFocus &&
             controls?.canCut(this) == true
@@ -1636,6 +1656,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   }
 
   VoidCallback _semanticsOnPaste(TextSelectionControls controls) {
+    // 少了 pasteEnabled
     return widget.selectionEnabled &&
             _hasFocus &&
             controls?.canPaste(this) == true
@@ -1657,6 +1678,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
       physics: widget.scrollPhysics,
       dragStartBehavior: widget.dragStartBehavior,
       viewportBuilder: (BuildContext context, ViewportOffset offset) {
+        // 对比源码 新增
         if (offset != null && offset is ScrollPosition) {
           if (offset.minScrollExtent != null &&
               offset.maxScrollExtent != null) {
@@ -1677,10 +1699,12 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
               key: _editableKey,
               startHandleLayerLink: _startHandleLayerLink,
               endHandleLayerLink: _endHandleLayerLink,
+              // 对比源码 修改
               textSpan: _buildTextSpan(),
               value: _value,
               cursorColor: _cursorColor,
               backgroundCursorColor: widget.backgroundCursorColor,
+              // 对比源码 修改
               showCursor: ExtendedEditableText.debugDeterministicCursor
                   ? ValueNotifier<bool>(widget.showCursor)
                   : _cursorVisibilityNotifier,
@@ -1712,6 +1736,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
               enableInteractiveSelection: widget.enableInteractiveSelection,
               textSelectionDelegate: this,
               devicePixelRatio: _devicePixelRatio,
+              // 对比源码 新增
               supportSpecialText: supportSpecialText,
             ),
           ),
@@ -1724,6 +1749,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   ///
   /// By default makes text in composing range appear as underlined.
   /// Descendants can override this method to customize appearance of text.
+  /// 对比源码 修改
   InlineSpan _buildTextSpan() {
     if (!widget.obscureText && _value.composing.isValid && !widget.readOnly) {
       final TextStyle composingStyle = widget.style.merge(
@@ -1768,6 +1794,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
     }
 
     String text = _value.text;
+    // ------------------
     if (widget.obscureText) {
       text = RenderEditable.obscuringCharacter * text.length;
       final int o =
@@ -1776,6 +1803,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
         text = text.replaceRange(o, o + 1, _value.text.substring(o, o + 1));
     }
 
+    // 对比源码 新增
     if (supportSpecialText) {
       var specialTextSpan =
           widget.specialTextSpanBuilder?.build(text, textStyle: widget.style);
@@ -1791,6 +1819,7 @@ class ExtendedEditableTextState extends State<ExtendedEditableText>
   TextEditingValue get currentTextEditingValue => _value;
 }
 
+// 对比源码 修改LeafRenderObjectWidget -> MultiChildRenderObjectWidget
 class _Editable extends MultiChildRenderObjectWidget {
   _Editable({
     Key key,
@@ -1828,6 +1857,7 @@ class _Editable extends MultiChildRenderObjectWidget {
     this.textSelectionDelegate,
     this.paintCursorAboveText,
     this.devicePixelRatio,
+    // 对比源码新增
     this.supportSpecialText,
   })  : assert(textDirection != null),
         assert(rendererIgnoresPointer != null),
@@ -1835,6 +1865,7 @@ class _Editable extends MultiChildRenderObjectWidget {
 
   // Traverses the InlineSpan tree and depth-first collects the list of
   // child widgets that are created in WidgetSpans.
+  // 对比源码 新增
   static List<Widget> _extractChildren(InlineSpan span) {
     final List<Widget> result = <Widget>[];
     span.visitChildren((InlineSpan span) {
@@ -1870,6 +1901,7 @@ class _Editable extends MultiChildRenderObjectWidget {
   final bool autocorrect;
   final bool enableSuggestions;
   final ViewportOffset offset;
+  // 对比源码 修改SelectionChangedHandler -> TextSelectionChangedHandler
   final TextSelectionChangedHandler onSelectionChanged;
   final CaretChangedHandler onCaretChanged;
   final bool rendererIgnoresPointer;
@@ -1880,11 +1912,13 @@ class _Editable extends MultiChildRenderObjectWidget {
   final TextSelectionDelegate textSelectionDelegate;
   final double devicePixelRatio;
   final bool paintCursorAboveText;
+  // 对比源码 新增
   final bool supportSpecialText;
 
   @override
   ExtendedRenderEditable createRenderObject(BuildContext context) {
     return ExtendedRenderEditable(
+      // 对比源码 新增
       supportSpecialText: supportSpecialText,
       text: textSpan,
       cursorColor: cursorColor,
@@ -1923,8 +1957,11 @@ class _Editable extends MultiChildRenderObjectWidget {
 
   @override
   void updateRenderObject(
-      BuildContext context, ExtendedRenderEditable renderObject) {
+      // 对比源码 修改 RenderEditable -> ExtendedRenderEditable
+      BuildContext context,
+      ExtendedRenderEditable renderObject) {
     renderObject
+      // 对比源码 新增
       ..supportSpecialText = supportSpecialText
       ..text = textSpan
       ..cursorColor = cursorColor

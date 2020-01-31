@@ -171,6 +171,7 @@ class ExtendedTextField extends StatefulWidget {
       this.buildCounter,
       this.scrollController,
       this.scrollPhysics,
+      // 对比官方文档新增
       this.specialTextSpanBuilder,
       this.textSelectionControls})
       : assert(textAlign != null),
@@ -217,9 +218,11 @@ class ExtendedTextField extends StatefulWidget {
 
   /// An interface for building the selection UI, to be provided by the
   /// implementor of the toolbar widget or handle widget
+  /// 对比官方文档新增
   final TextSelectionControls textSelectionControls;
 
   ///build your ccustom text span
+  /// 对比官方文档新增
   final SpecialTextSpanBuilder specialTextSpanBuilder;
 
   /// Controls the text being edited.
@@ -619,6 +622,7 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
       widget.decoration != null &&
       widget.decoration.counterText == null;
 
+  // 对比官方文档新增
   bool _shouldShowSelectionToolbar = true;
 
   bool _showSelectionHandles = false;
@@ -631,6 +635,7 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
   final GlobalKey<ExtendedEditableTextState> editableTextKey =
       GlobalKey<ExtendedEditableTextState>();
 
+  // 对比源码 新增
   @override
   ExtendedTextSelectionRenderObject get renderEditable =>
       editableTextKey.currentState.renderEditable;
@@ -714,6 +719,7 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
   @override
   void initState() {
     super.initState();
+    // 对比源码修改的 地方
     _selectionGestureDetectorBuilder =
         CommonTextSelectionGestureDetectorBuilder(
       delegate: this,
@@ -727,6 +733,7 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
       context: context,
       requestKeyboard: _requestKeyboard,
     );
+    // --- 结束 ---
     if (widget.controller == null) {
       _controller = TextEditingController();
     }
@@ -839,6 +846,7 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
     if (widget.maxLength != null && widget.maxLengthEnforced)
       formatters.add(LengthLimitingTextInputFormatter(widget.maxLength));
 
+    // 对比源码 修改
     TextSelectionControls textSelectionControls = widget.textSelectionControls;
     bool paintCursorAboveText;
     bool cursorOpacityAnimates;
@@ -850,6 +858,7 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
       case TargetPlatform.android:
       case TargetPlatform.fuchsia:
         forcePressEnabled = false;
+        // 对比源码 修改
         textSelectionControls ??= extendedMaterialTextSelectionControls;
         paintCursorAboveText = false;
         cursorOpacityAnimates = false;
@@ -859,6 +868,7 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
       default:
         //case TargetPlatform.macOS:
         forcePressEnabled = true;
+        // 对比源码 修改
         textSelectionControls ??= extendedCupertinoTextSelectionControls;
         paintCursorAboveText = true;
         cursorOpacityAnimates = true;
@@ -915,6 +925,7 @@ class _ExtendedTextFieldState extends State<ExtendedTextField>
         dragStartBehavior: widget.dragStartBehavior,
         scrollController: widget.scrollController,
         scrollPhysics: widget.scrollPhysics,
+        // 对比源码 新增
         specialTextSpanBuilder: widget.specialTextSpanBuilder,
       ),
     );
