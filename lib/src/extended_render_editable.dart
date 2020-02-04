@@ -27,6 +27,7 @@ const double _kCaretGap = 1.0; // pixels
 ///https://github.com/fluttercandies/extended_text_field/issues/19
 ///https://github.com/fluttercandies/extended_text_field/issues/10
 //const double _kCaretHeightOffset = 2.0; // pixels
+// 对比源码 修改
 const double _kCaretHeightOffset = 0.0; // pixels
 
 // The additional size on the x and y axis with which to expand the prototype
@@ -101,6 +102,7 @@ bool _isWhitespace(int codeUnit) {
 /// Keyboard handling, IME handling, scrolling, toggling the [showCursor] value
 /// to actually blink the cursor, and other features not mentioned above are the
 /// responsibility of higher layers and not handled by this object.
+/// 对比源码 修改 extends RenderBox with RelayoutWhenSystemFontsChangeMixin -> extends ExtendedTextSelectionRenderObject
 class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   /// Creates a render object that implements the visual aspects of a text field.
   ///
@@ -117,6 +119,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   /// The [offset] is required and must not be null. You can use [new
   /// ViewportOffset.zero] if you have no need for scrolling.
   ExtendedRenderEditable({
+    // 对比源码修改TextSpan -> InlineSpan
     InlineSpan text,
     @required TextDirection textDirection,
     TextAlign textAlign = TextAlign.start,
@@ -151,6 +154,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     EdgeInsets floatingCursorAddedMargin =
         const EdgeInsets.fromLTRB(4, 4, 4, 5),
     @required this.textSelectionDelegate,
+    // 对比源码 新增
     this.supportSpecialText,
     List<RenderBox> children,
   })  : assert(textAlign != null),
@@ -180,7 +184,9 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
         assert(readOnly != null),
         assert(forceLine != null),
         assert(devicePixelRatio != null),
+        // 对比源码 新增
         _handleSpecialText = hasSpecialText(text),
+        // -----------
         _textPainter = TextPainter(
           text: text,
           textAlign: textAlign,
@@ -215,15 +221,18 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     assert(_showCursor != null);
     assert(!_showCursor.value || cursorColor != null);
     this.hasFocus = hasFocus ?? false;
+    // 对比源码 新增
     addAll(children);
     extractPlaceholderSpans(text);
   }
 
   ///whether to support build SpecialText
-
+  ///对比源码 新增
   bool supportSpecialText = false;
   bool _handleSpecialText = false;
   bool get handleSpecialText => supportSpecialText && _handleSpecialText;
+  // -------------- 
+
 
   /// Character used to obscure text if [obscureText] is true.
   static const String obscuringCharacter = '•';
@@ -231,6 +240,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   /// Called when the selection changes.
   ///
   /// If this is null, then selection changes will be ignored.
+  /// 对比源码 修改SelectionChangedHandler -> TextSelectionChangedHandler
   TextSelectionChangedHandler onSelectionChanged;
 
   /// Called during the paint phase when the caret location changes.
@@ -310,6 +320,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   final ValueNotifier<bool> _selectionEndInViewport = ValueNotifier<bool>(true);
 
   void _updateSelectionExtentsVisibility(
+    // 对比源码 新增 , TextSelection selection
       Offset effectiveOffset, TextSelection selection) {
     ///final Rect visibleRegion = Offset.zero & size;
 
@@ -317,6 +328,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     ///caret may be less than 0, because it's bigger than text
     ///
 
+    ///对比源码 修改 
     final Rect visibleRegion = Offset(0.0, _visibleRegionMinY) & size;
 
     final Offset startOffset = getCaretOffset(
@@ -341,6 +353,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
         .inflate(visibleRegionSlop)
         .contains(startOffset + effectiveOffset);
 
+    // 对比源码 修改
     final Offset endOffset = getCaretOffset(
       TextPosition(offset: selection.end, affinity: selection.affinity),
       effectiveOffset: effectiveOffset,
@@ -355,7 +368,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
 
   ///some times _visibleRegionMinY will lower than 0.0;
   ///that the _selectionStartInViewport and _selectionEndInViewport will not right.
-  ///
+  /// 对比源码 新增
   double _visibleRegionMinY = -_kCaretHeightOffset;
 
 //   ///zmt
@@ -395,6 +408,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
       return;
     }
     if (onSelectionChanged != null) {
+      // 对比源码 删除 this,
       onSelectionChanged(nextSelection, cause);
     }
   }
@@ -723,19 +737,24 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   // Retuns a cached plain text version of the text in the painter.
   String _cachedPlainText;
   String get plainText {
+    // 对比源码 修改
     _cachedPlainText ??= textSpanToActualText(_textPainter.text);
     return _cachedPlainText;
   }
 
   /// The text to display.
+  /// 对比源码 修改
   InlineSpan get text => _textPainter.text;
   final TextPainter _textPainter;
+  // 对比源码 修改
   set text(InlineSpan value) {
     if (_textPainter.text == value) return;
     _textPainter.text = value;
     _cachedPlainText = null;
+    // 对比源码 新增
     extractPlaceholderSpans(value);
     _handleSpecialText = hasSpecialText(value);
+    // ------------
     markNeedsTextLayout();
     markNeedsSemanticsUpdate();
   }
@@ -947,9 +966,11 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     // affinity. This happens when the platform does not supply affinity,
     // in which case using the fallback affinity computed from dart:ui will
     // be superior to simply defaulting to TextAffinity.downstream.
+    // 对比源码 新增
     if (value.affinity == null) {
       _selection = value.copyWith(affinity: fallbackAffinity);
     } else {
+    // -----------
       _selection = value;
     }
     _selectionRects = null;
@@ -1234,6 +1255,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
   @override
   void attach(PipelineOwner owner) {
     super.attach(owner);
+    // 对比源码 注释
     // _tap = TapGestureRecognizer(debugOwner: this)
     //   ..onTapDown = _handleTapDown
     //   ..onTap = _handleTap;
@@ -1245,6 +1267,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
 
   @override
   void detach() {
+    // 对比源码 注释
     // _tap.dispose();
     // _longPress.dispose();
     _offset.removeListener(markNeedsPaint);
@@ -1312,6 +1335,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
 
     //final Offset paintOffset = _paintOffset;
     ///zmt
+    ///对比源码 新增
     final Offset effectiveOffset = _effectiveOffset;
 
     TextSelection textPainterSelection = selection;
@@ -1319,9 +1343,11 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
       textPainterSelection =
           convertTextInputSelectionToTextPainterSelection(text, selection);
     }
+    // ----------------------
     if (selection.isCollapsed) {
       // todo(mpcomplete): This doesn't work well at an RTL/LTR boundary.
 
+      // 对比源码 修改
       double caretHeight;
       ValueChanged<double> caretHeightCallBack = (value) {
         caretHeight = value;
@@ -1339,15 +1365,17 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
 
       final Offset start =
           Offset(0.0, caretHeight ?? preferredLineHeight) + caretOffset;
-
+      // ------------------
       return <TextSelectionPoint>[TextSelectionPoint(start, null)];
     } else {
+      // 对比源码 修改
       final List<ui.TextBox> boxes =
           _textPainter.getBoxesForSelection(textPainterSelection);
       final Offset start =
           Offset(boxes.first.start, boxes.first.bottom) + effectiveOffset;
       final Offset end =
           Offset(boxes.last.end, boxes.last.bottom) + effectiveOffset;
+      // -----------------    
       return <TextSelectionPoint>[
         TextSelectionPoint(start, boxes.first.direction),
         TextSelectionPoint(end, boxes.last.direction),
@@ -1506,10 +1534,14 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
             textLayoutLastMinWidth == constraints.minWidth,
         'Last width ($textLayoutLastMinWidth, $textLayoutLastMaxWidth) not the same as max width constraint (${constraints.minWidth}, ${constraints.maxWidth}).');
     final TextRange line = _textPainter.getLineBoundary(position);
+    // 对比源码 新增
     TextSelection selection;
+    // -----------
     if (position.offset >= line.end)
+    // 对比源码 修改
       selection = TextSelection.fromPosition(position);
 
+    // 对比源码 修改
     if (selection == null) {
       // If text is obscured, the entire string should be treated as one line.
       if (obscureText) {
@@ -1517,7 +1549,9 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
       }
       selection = TextSelection(baseOffset: line.start, extentOffset: line.end);
     }
+    // ----------
 
+    // 对比源码 新增
     return handleSpecialText
         ? convertTextPainterSelectionToTextInputSelection(text, selection,
             selectWord: true)
@@ -1548,17 +1582,20 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
       default:
         return Rect.fromLTWH(0.0, 0.0, cursorWidth, preferredLineHeight + 2);
     }
+    // 对比源码 注释
     //return null;
   }
 
   @override
   void performLayout() {
+    // 对比源码 修改
     layoutChildren(constraints);
     layoutText(
         minWidth: constraints.minWidth,
         maxWidth: constraints.maxWidth,
         forceLayout: true);
     setParentData();
+    // ------------
     _caretPrototype = _getCaretPrototype;
     _selectionRects = null;
     // We grab _textPainter.size here because assigning to `size` on the next
@@ -1594,6 +1631,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     return Offset(pixelPerfectOffsetX, pixelPerfectOffsetY);
   }
 
+  // 对比源码 新增 TextPosition textPosition,
   void _paintCaret(Canvas canvas, Offset effectiveOffset,
       TextPosition textPosition, TextPosition textInputPosition) {
     assert(
@@ -1606,10 +1644,12 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     final Paint paint = Paint()
       ..color = _floatingCursorOn ? backgroundCursorColor : _cursorColor;
 
+    // 对比源码 新增
     double caretHeight;
     ValueChanged<double> caretHeightCallBack = (value) {
       caretHeight = value;
     };
+    // 对比源码 修改
     final Offset caretOffset = getCaretOffset(
       textPosition,
       caretHeightCallBack: caretHeightCallBack,
@@ -1621,6 +1661,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     Rect caretRect = _caretPrototype.shift(caretOffset);
     if (_cursorOffset != null) caretRect = caretRect.shift(_cursorOffset);
 
+    // 对比源码 修改
     var fullHeight =
         _textPainter.getFullHeightForCaret(textPosition, _caretPrototype) ??
             caretHeight;
@@ -1813,6 +1854,7 @@ class ExtendedRenderEditable extends ExtendedTextSelectionRenderObject {
     bool showCaret = false;
 
     ///zmt
+    ///对比源码 修改  后面大部分改动较大
     var actualSelection = handleSpecialText
         ? convertTextInputSelectionToTextPainterSelection(text, _selection)
         : _selection;
